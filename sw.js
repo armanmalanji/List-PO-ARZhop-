@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arzhop-po-v1';
+const CACHE_NAME = 'arzhop-po-v2'; // <-- Versi diubah menjadi v2 agar HP mendownload update terbaru
 
 // Daftar file yang akan disimpan secara offline
 const urlsToCache = [
