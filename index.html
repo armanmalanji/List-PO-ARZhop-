@@ -59,7 +59,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <div class="flex justify-between h-16 items-center">
 <div class="flex items-center gap-3">
 <!-- Logo Arzhop Anda -->
-<img src="Arzhop new.png" alt="Arzhop Logo" class="h-10 w-10 object-contain drop-shadow-sm" onerror="this.style.display='none'; this.nextElementSibling.style.marginLeft='0'">
+<img src="Arzhop new.png" alt="Arzhop Logo" class="h-10 w-10 object-contain drop-shadow-sm" onerror="this.style.display='none';">
 <span class="font-bold text-xl text-slate-900">Arzhop PO</span>
 </div>
 <div>
@@ -71,33 +71,43 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-<!-- Summary Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-<div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
-<div class="p-4 bg-blue-50 rounded-xl text-blue-600">
-<i data-lucide="shopping-cart" class="w-8 h-8"></i>
+<!-- Summary Cards (Diubah menjadi 4 kolom) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+<div class="p-3 bg-blue-50 rounded-xl text-blue-600 shrink-0">
+<i data-lucide="shopping-cart" class="w-6 h-6"></i>
 </div>
 <div>
-<p class="text-sm font-medium text-slate-500">Total PO</p>
-<h3 class="text-2xl font-bold text-slate-900" id="summaryCount">0</h3>
+<p class="text-xs font-medium text-slate-500 mb-0.5">Total PO</p>
+<h3 class="text-xl font-bold text-slate-900" id="summaryCount">0</h3>
 </div>
 </div>
-<div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
-<div class="p-4 bg-green-50 rounded-xl text-green-600">
-<i data-lucide="wallet" class="w-8 h-8"></i>
-</div>
-<div>
-<p class="text-sm font-medium text-slate-500">Total Nilai Order</p>
-<h3 class="text-2xl font-bold text-slate-900" id="summaryTotal">Rp 0</h3>
-</div>
-</div>
-<div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
-<div class="p-4 bg-orange-50 rounded-xl text-orange-600">
-<i data-lucide="alert-circle" class="w-8 h-8"></i>
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+<div class="p-3 bg-indigo-50 rounded-xl text-indigo-600 shrink-0">
+<i data-lucide="wallet" class="w-6 h-6"></i>
 </div>
 <div>
-<p class="text-sm font-medium text-slate-500">Total Piutang (Sisa)</p>
-<h3 class="text-2xl font-bold text-slate-900" id="summarySisa">Rp 0</h3>
+<p class="text-xs font-medium text-slate-500 mb-0.5">Total Nilai Order</p>
+<h3 class="text-xl font-bold text-slate-900 truncate" id="summaryTotal" title="Rp 0">Rp 0</h3>
+</div>
+</div>
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+<div class="p-3 bg-orange-50 rounded-xl text-orange-600 shrink-0">
+<i data-lucide="alert-circle" class="w-6 h-6"></i>
+</div>
+<div>
+<p class="text-xs font-medium text-slate-500 mb-0.5">Total Piutang (Sisa)</p>
+<h3 class="text-xl font-bold text-slate-900 truncate" id="summarySisa" title="Rp 0">Rp 0</h3>
+</div>
+</div>
+<!-- Kartu Baru: Total Laba -->
+<div class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100 bg-emerald-50/30 flex items-center gap-4">
+<div class="p-3 bg-emerald-100 rounded-xl text-emerald-600 shrink-0">
+<i data-lucide="trending-up" class="w-6 h-6"></i>
+</div>
+<div>
+<p class="text-xs font-medium text-emerald-700 mb-0.5">Total Laba Bersih</p>
+<h3 class="text-xl font-bold text-emerald-900 truncate" id="summaryLaba" title="Rp 0">Rp 0</h3>
 </div>
 </div>
 </div>
@@ -284,7 +294,19 @@ setTimeout(() => toast.remove(), 300);
 }, 3000);
 };
 
-// Utility: Format Rupiah
+// Utility: Format Rupiah Pendek (Misal: 1.500.000 -> 1.5 Jt)
+// Digunakan agar summary card tidak terlalu panjang
+const formatRupiahShort = (number) => {
+if (number >= 1000000000) {
+return 'Rp ' + (number / 1000000000).toFixed(1).replace(/\.0$/, '') + ' M';
+}
+if (number >= 1000000) {
+return 'Rp ' + (number / 1000000).toFixed(1).replace(/\.0$/, '') + ' Jt';
+}
+return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+};
+
+// Utility: Format Rupiah Standar
 const formatRupiah = (number) => {
 return new Intl.NumberFormat('id-ID', {
 style: 'currency',
@@ -379,11 +401,12 @@ lucide.createIcons();
 updateSummary();
 };
 
-// Update Summary Cards
+// Update Summary Cards (Total Kalkulasi)
 const updateSummary = () => {
 const totalPO = poData.length;
 let totalNilai = 0;
 let totalSisa = 0;
+let totalLaba = 0;
 
 poData.forEach(po => {
 const totalOrder = po.harga - po.disc;
@@ -391,12 +414,21 @@ const totalDibayar = po.dp + po.bayar;
 const sisa = totalOrder - totalDibayar;
 
 totalNilai += totalOrder;
+totalLaba += po.laba || 0;
 if (sisa > 0) totalSisa += sisa;
 });
 
 document.getElementById('summaryCount').innerText = totalPO;
-document.getElementById('summaryTotal').innerText = formatRupiah(totalNilai);
-document.getElementById('summarySisa').innerText = formatRupiah(totalSisa);
+
+// Format Title untuk hover (menampilkan nominal lengkap)
+document.getElementById('summaryTotal').title = formatRupiah(totalNilai);
+document.getElementById('summarySisa').title = formatRupiah(totalSisa);
+document.getElementById('summaryLaba').title = formatRupiah(totalLaba);
+
+// Teks yang tampil bisa disingkat (Jt/M) jika terlalu besar agar tidak merusak layout
+document.getElementById('summaryTotal').innerText = formatRupiahShort(totalNilai);
+document.getElementById('summarySisa').innerText = formatRupiahShort(totalSisa);
+document.getElementById('summaryLaba').innerText = formatRupiahShort(totalLaba);
 };
 
 // Form Submit Handler
@@ -537,7 +569,6 @@ return {
 
 const worksheet = XLSX.utils.json_to_sheet(worksheetData);
 
-// Ditambah 1 kolom (Laba) menjadi total 12 kolom
 const colWidths = [
 { wch: 20 }, { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 },
 { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
@@ -566,7 +597,6 @@ worksheet[cellRef].s.font = { bold: true, color: { rgb: "FFFFFF" } };
 worksheet[cellRef].s.fill = { fgColor: { rgb: "2563EB" } };
 worksheet[cellRef].s.alignment = { horizontal: "center", vertical: "center" };
 } else if (C >= 3 && C <= 9) {
-// Kolom uang (rata kanan) -> C >= 3 (Harga) sampai C <= 9 (Laba)
 worksheet[cellRef].s.alignment = { horizontal: "right" };
 }
 }
@@ -590,7 +620,6 @@ doc.text("Daftar Purchase Order Arzhop", 14, 15);
 doc.setFontSize(10);
 doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
 
-// Menambahkan Header Kolom "Laba"
 const tableColumn = ["Nama", "Supplier", "Orderan", "Estimasi", "Hrg Jual", "Hrg Pusat", "Disc", "DP", "Bayar", "Sisa", "Laba"];
 const tableRows = [];
 
@@ -607,7 +636,7 @@ formatRupiah(po.disc),
 formatRupiah(po.dp),
 formatRupiah(po.bayar || 0),
 formatRupiah(sisa),
-formatRupiah(po.laba || 0) // Data Laba dimasukkan
+formatRupiah(po.laba || 0)
 ];
 tableRows.push(poDataRow);
 });
@@ -618,7 +647,7 @@ body: tableRows,
 startY: 28,
 theme: 'grid',
 styles: {
-fontSize: 7, // Dikecilkan sedikit agar muat dengan tambahan 1 kolom
+fontSize: 7,
 cellPadding: 3,
 lineWidth: 0.2,
 lineColor: [0, 0, 0],
@@ -637,7 +666,7 @@ columnStyles: {
 7: { halign: 'right' },
 8: { halign: 'right' },
 9: { halign: 'right' },
-10: { halign: 'right' } // Rata kanan untuk kolom Laba
+10: { halign: 'right' }
 }
 });
 
