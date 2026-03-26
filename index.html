@@ -58,12 +58,14 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex justify-between h-16 items-center">
 <div class="flex items-center gap-3">
-<!-- Logo Arzhop Anda -->
 <img src="Arzhop new.png" alt="Arzhop Logo" class="h-10 w-10 object-contain drop-shadow-sm" onerror="this.style.display='none';">
 <span class="font-bold text-xl text-slate-900">Arzhop PO</span>
 </div>
-<div>
-<span class="text-sm font-medium text-slate-500" id="currentDate"></span>
+<div class="flex items-center gap-4">
+<span class="text-sm font-medium text-slate-500 hidden sm:block" id="currentDate"></span>
+<button onclick="keluarApp()" class="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors border border-red-100" title="Simpan & Keluar">
+<i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+</button>
 </div>
 </div>
 </div>
@@ -71,7 +73,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-<!-- Summary Cards (Diubah menjadi 4 kolom) -->
+<!-- Summary Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
 <div class="p-3 bg-blue-50 rounded-xl text-blue-600 shrink-0">
@@ -100,7 +102,6 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <h3 class="text-xl font-bold text-slate-900 truncate" id="summarySisa" title="Rp 0">Rp 0</h3>
 </div>
 </div>
-<!-- Kartu Baru: Total Laba -->
 <div class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100 bg-emerald-50/30 flex items-center gap-4">
 <div class="p-3 bg-emerald-100 rounded-xl text-emerald-600 shrink-0">
 <i data-lucide="trending-up" class="w-6 h-6"></i>
@@ -118,7 +119,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
 <div class="mb-6 flex items-center justify-between">
 <h2 class="text-lg font-bold text-slate-900">Tambah PO Baru</h2>
-<button onclick="resetForm()" class="text-sm text-slate-400 hover:text-slate-600" title="Reset Form">
+<button type="button" onclick="resetForm()" class="text-sm text-slate-400 hover:text-slate-600" title="Reset Form">
 <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
 </button>
 </div>
@@ -192,22 +193,33 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <!-- Table Section -->
 <div class="lg:col-span-2">
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-<div class="px-6 py-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50/50">
+<div class="px-6 py-5 border-b border-slate-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-50/50">
 <h2 class="text-lg font-bold text-slate-900">Daftar List PO</h2>
 
-<div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-<!-- Action Buttons -->
-<button onclick="exportXLS()" class="flex items-center gap-2 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-sm font-medium transition-colors border border-emerald-200" title="Export to Excel">
+<div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+<!-- Hidden input for restoring data -->
+<input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreData(event)">
+
+<button onclick="backupData()" class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors border border-blue-200" title="Simpan Cadangan Data">
+<i data-lucide="download-cloud" class="w-4 h-4"></i> Backup
+</button>
+<button onclick="document.getElementById('restoreFile').click()" class="flex items-center gap-1.5 px-3 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-semibold transition-colors border border-purple-200" title="Pulihkan Data">
+<i data-lucide="upload-cloud" class="w-4 h-4"></i> Restore
+</button>
+
+<div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+
+<button onclick="exportXLS()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-semibold transition-colors border border-emerald-200" title="Export to Excel">
 <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> XLS
 </button>
-<button onclick="exportPDF()" class="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors border border-red-200" title="Export to PDF">
+<button onclick="exportPDF()" class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors border border-red-200" title="Export to PDF">
 <i data-lucide="file-text" class="w-4 h-4"></i> PDF
 </button>
 
 <!-- Search -->
-<div class="relative flex-grow md:flex-grow-0">
+<div class="relative flex-grow xl:flex-grow-0 mt-2 xl:mt-0 w-full xl:w-auto">
 <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-<input type="text" id="searchInput" placeholder="Cari nama/supplier..." class="pl-9 pr-4 py-2 w-full text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-primary-500 outline-none md:w-56">
+<input type="text" id="searchInput" placeholder="Cari nama/supplier..." class="pl-9 pr-4 py-2 w-full text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-primary-500 outline-none xl:w-48">
 </div>
 </div>
 </div>
@@ -257,21 +269,17 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </div>
 
 <!-- Container Toast Message -->
-<div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
 // Registrasi Service Worker untuk PWA
 if ('serviceWorker' in navigator) {
 window.addEventListener('load', () => {
-navigator.serviceWorker.register('./sw.js').then(reg => {
-console.log('PWA Service Worker terdaftar!', reg.scope);
-}).catch(err => {
-console.log('Gagal mendaftar Service Worker', err);
-});
+navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
 });
 }
 
-// Initialize Lucide Icons
+// Initialize Icons
 lucide.createIcons();
 
 // State Management
@@ -282,9 +290,8 @@ let currentLunasId = null;
 const showToast = (message) => {
 const container = document.getElementById('toastContainer');
 const toast = document.createElement('div');
-toast.className = 'bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm transition-opacity duration-300 flex items-center gap-2';
+toast.className = 'bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm transition-opacity duration-300 flex items-center gap-2 pointer-events-auto';
 toast.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${message}`;
-
 container.appendChild(toast);
 lucide.createIcons();
 
@@ -294,45 +301,31 @@ setTimeout(() => toast.remove(), 300);
 }, 3000);
 };
 
-// Utility: Format Rupiah Pendek (Misal: 1.500.000 -> 1.5 Jt)
-// Digunakan agar summary card tidak terlalu panjang
+// Utility Formatter
 const formatRupiahShort = (number) => {
-if (number >= 1000000000) {
-return 'Rp ' + (number / 1000000000).toFixed(1).replace(/\.0$/, '') + ' M';
-}
-if (number >= 1000000) {
-return 'Rp ' + (number / 1000000).toFixed(1).replace(/\.0$/, '') + ' Jt';
-}
+if (number >= 1000000000) return 'Rp ' + (number / 1000000000).toFixed(1).replace(/\.0$/, '') + ' M';
+if (number >= 1000000) return 'Rp ' + (number / 1000000).toFixed(1).replace(/\.0$/, '') + ' Jt';
 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 };
 
-// Utility: Format Rupiah Standar
 const formatRupiah = (number) => {
-return new Intl.NumberFormat('id-ID', {
-style: 'currency',
-currency: 'IDR',
-minimumFractionDigits: 0
-}).format(number);
+return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 };
 
-// Utility: Format Date
 const formatDate = (dateString) => {
-const options = { day: 'numeric', month: 'short', year: 'numeric' };
-return new Date(dateString).toLocaleDateString('id-ID', options);
+return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-// Set Current Date in Header
+// Header Date
 const setHeaderDate = () => {
-const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', options);
+document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 };
 setHeaderDate();
 
-// Render Table
+// Main Render
 const renderTable = (dataToRender = poData) => {
 const tbody = document.getElementById('poTableBody');
 const emptyState = document.getElementById('emptyState');
-
 tbody.innerHTML = '';
 
 if (dataToRender.length === 0) {
@@ -401,12 +394,9 @@ lucide.createIcons();
 updateSummary();
 };
 
-// Update Summary Cards (Total Kalkulasi)
 const updateSummary = () => {
 const totalPO = poData.length;
-let totalNilai = 0;
-let totalSisa = 0;
-let totalLaba = 0;
+let totalNilai = 0, totalSisa = 0, totalLaba = 0;
 
 poData.forEach(po => {
 const totalOrder = po.harga - po.disc;
@@ -419,37 +409,31 @@ if (sisa > 0) totalSisa += sisa;
 });
 
 document.getElementById('summaryCount').innerText = totalPO;
-
-// Format Title untuk hover (menampilkan nominal lengkap)
 document.getElementById('summaryTotal').title = formatRupiah(totalNilai);
 document.getElementById('summarySisa').title = formatRupiah(totalSisa);
 document.getElementById('summaryLaba').title = formatRupiah(totalLaba);
 
-// Teks yang tampil bisa disingkat (Jt/M) jika terlalu besar agar tidak merusak layout
 document.getElementById('summaryTotal').innerText = formatRupiahShort(totalNilai);
 document.getElementById('summarySisa').innerText = formatRupiahShort(totalSisa);
 document.getElementById('summaryLaba').innerText = formatRupiahShort(totalLaba);
 };
 
-// Form Submit Handler
+// Form Submission
 document.getElementById('poForm').addEventListener('submit', function(e) {
 e.preventDefault();
-
 const id = document.getElementById('editId').value;
-const nama = document.getElementById('nama').value;
-const supplier = document.getElementById('supplier').value;
-const orderan = document.getElementById('orderan').value;
-const harga = parseFloat(document.getElementById('harga').value) || 0;
-const hargaPusat = parseFloat(document.getElementById('hargaPusat').value) || 0;
-const bayar = parseFloat(document.getElementById('bayar').value) || 0;
-const disc = parseFloat(document.getElementById('disc').value) || 0;
-const dp = parseFloat(document.getElementById('dp').value) || 0;
-const laba = parseFloat(document.getElementById('laba').value) || 0;
-const estimasi = document.getElementById('estimasi').value;
-
 const newPO = {
 id: id ? id : Date.now().toString(),
-nama, supplier, orderan, harga, hargaPusat, bayar, disc, dp, laba, estimasi
+nama: document.getElementById('nama').value,
+supplier: document.getElementById('supplier').value,
+orderan: document.getElementById('orderan').value,
+harga: parseFloat(document.getElementById('harga').value) || 0,
+hargaPusat: parseFloat(document.getElementById('hargaPusat').value) || 0,
+bayar: parseFloat(document.getElementById('bayar').value) || 0,
+disc: parseFloat(document.getElementById('disc').value) || 0,
+dp: parseFloat(document.getElementById('dp').value) || 0,
+laba: parseFloat(document.getElementById('laba').value) || 0,
+estimasi: document.getElementById('estimasi').value
 };
 
 if (id) {
@@ -460,13 +444,12 @@ showToast("PO berhasil diupdate!");
 poData.push(newPO);
 showToast("PO baru berhasil ditambahkan!");
 }
-
 saveData();
 resetForm();
 renderTable();
 });
 
-// Edit PO
+// Edit Data
 const editPO = (id) => {
 const po = poData.find(p => p.id === id);
 if (po) {
@@ -481,13 +464,12 @@ document.getElementById('disc').value = po.disc;
 document.getElementById('dp').value = po.dp;
 document.getElementById('laba').value = po.laba || 0;
 document.getElementById('estimasi').value = po.estimasi;
-
 document.getElementById('btnSubmitText').innerText = 'Update PO';
 window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 };
 
-// Delete PO
+// Delete Data
 const deletePO = (id) => {
 if (confirm('Apakah Anda yakin ingin menghapus data PO ini?')) {
 poData = poData.filter(po => po.id !== id);
@@ -497,7 +479,7 @@ showToast("Data PO dihapus!");
 }
 };
 
-// Modal Lunas Logic
+// Lunas Logic
 const lunasModal = document.getElementById('lunasModal');
 const lunasModalContent = lunasModal.querySelector('div');
 
@@ -514,9 +496,7 @@ const closeLunasModal = () => {
 currentLunasId = null;
 lunasModal.classList.add('opacity-0');
 lunasModalContent.classList.add('scale-95');
-setTimeout(() => {
-lunasModal.classList.add('hidden');
-}, 300);
+setTimeout(() => lunasModal.classList.add('hidden'), 300);
 };
 
 document.getElementById('confirmLunasBtn').addEventListener('click', () => {
@@ -534,7 +514,7 @@ showToast("PO telah ditandai lunas!");
 closeLunasModal();
 });
 
-// Search Logic
+// Search Engine
 document.getElementById('searchInput').addEventListener('input', function(e) {
 const keyword = e.target.value.toLowerCase();
 const filteredData = poData.filter(po =>
@@ -545,141 +525,118 @@ po.orderan.toLowerCase().includes(keyword)
 renderTable(filteredData);
 });
 
-// Export ke Excel (XLS)
+// Backup
+const backupData = () => {
+if (poData.length === 0) return showToast("Tidak ada data untuk dibackup!");
+const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(poData));
+const downloadAnchorNode = document.createElement('a');
+downloadAnchorNode.setAttribute("href", dataStr);
+downloadAnchorNode.setAttribute("download", `Backup_Arzhop_PO_${new Date().toISOString().split('T')[0]}.json`);
+document.body.appendChild(downloadAnchorNode);
+downloadAnchorNode.click();
+downloadAnchorNode.remove();
+showToast("File backup diunduh!");
+};
+
+// Restore
+const restoreData = (event) => {
+const file = event.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = function(e) {
+try {
+const importedData = JSON.parse(e.target.result);
+if (Array.isArray(importedData)) {
+poData = importedData;
+saveData();
+renderTable();
+showToast("Data berhasil dipulihkan!");
+} else {
+alert("Format file tidak valid.");
+}
+} catch (error) {
+alert("Gagal membaca file.");
+}
+};
+reader.readAsText(file);
+event.target.value = '';
+};
+
+// Exit App
+const keluarApp = () => {
+saveData();
+showToast("Menyimpan data...");
+setTimeout(() => {
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+window.close();
+} else {
+window.location.href = "about:blank";
+}
+}, 800);
+};
+
+// Export XLS (Excel) with Table Margins
 const exportXLS = () => {
 if(poData.length === 0) return showToast("Belum ada data untuk di-export.");
-
 const worksheetData = poData.map(po => {
 const sisa = (po.harga - po.disc) - po.dp - po.bayar;
 return {
-"Nama Customer": po.nama,
-"Supplier": po.supplier,
-"Orderan": po.orderan,
-"Harga Jual": po.harga,
-"Harga Pusat": po.hargaPusat || 0,
-"Discount": po.disc,
-"DP": po.dp,
-"Bayar": po.bayar || 0,
-"Sisa Tagihan": sisa,
-"Laba": po.laba || 0,
-"Status": sisa <= 0 ? "Lunas" : "Belum Lunas",
-"Estimasi Ready": po.estimasi
+"Nama Customer": po.nama, "Supplier": po.supplier, "Orderan": po.orderan,
+"Harga Jual": po.harga, "Harga Pusat": po.hargaPusat || 0, "Discount": po.disc,
+"DP": po.dp, "Bayar": po.bayar || 0, "Sisa Tagihan": sisa, "Laba": po.laba || 0,
+"Status": sisa <= 0 ? "Lunas" : "Belum Lunas", "Estimasi Ready": po.estimasi
 };
 });
-
 const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-
-const colWidths = [
-{ wch: 20 }, { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 },
-{ wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
-{ wch: 15 }, { wch: 15 }
-];
-worksheet['!cols'] = colWidths;
+worksheet['!cols'] = [{wch:20},{wch:20},{wch:30},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15},{wch:15}];
 
 const range = XLSX.utils.decode_range(worksheet['!ref']);
 for (let R = range.s.r; R <= range.e.r; ++R) {
 for (let C = range.s.c; C <= range.e.c; ++C) {
-const cellAddress = { c: C, r: R };
-const cellRef = XLSX.utils.encode_cell(cellAddress);
-
+const cellRef = XLSX.utils.encode_cell({c:C, r:R});
 if (!worksheet[cellRef]) continue;
 if (!worksheet[cellRef].s) worksheet[cellRef].s = {};
-
-worksheet[cellRef].s.border = {
-top: { style: "thin", color: { rgb: "000000" } },
-bottom: { style: "thin", color: { rgb: "000000" } },
-left: { style: "thin", color: { rgb: "000000" } },
-right: { style: "thin", color: { rgb: "000000" } }
-};
-
+worksheet[cellRef].s.border = { top: {style:"thin", color:{rgb:"000000"}}, bottom: {style:"thin", color:{rgb:"000000"}}, left: {style:"thin", color:{rgb:"000000"}}, right: {style:"thin", color:{rgb:"000000"}} };
 if (R === 0) {
-worksheet[cellRef].s.font = { bold: true, color: { rgb: "FFFFFF" } };
-worksheet[cellRef].s.fill = { fgColor: { rgb: "2563EB" } };
-worksheet[cellRef].s.alignment = { horizontal: "center", vertical: "center" };
-} else if (C >= 3 && C <= 9) {
-worksheet[cellRef].s.alignment = { horizontal: "right" };
+worksheet[cellRef].s.font = {bold:true, color:{rgb:"FFFFFF"}};
+worksheet[cellRef].s.fill = {fgColor:{rgb:"2563EB"}};
+worksheet[cellRef].s.alignment = {horizontal:"center", vertical:"center"};
+} else if (C >= 3 && C <= 9) worksheet[cellRef].s.alignment = {horizontal:"right"};
 }
 }
-}
-
 const workbook = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(workbook, worksheet, "Daftar PO");
 XLSX.writeFile(workbook, `Arzhop_PO_${new Date().toISOString().split('T')[0]}.xlsx`);
-showToast("Berhasil mendownload Excel!");
+showToast("Mendownload Excel...");
 };
 
-// Export ke PDF
+// Export PDF with Table Margins
 const exportPDF = () => {
 if(poData.length === 0) return showToast("Belum ada data untuk di-export.");
-
 const { jsPDF } = window.jspdf;
 const doc = new jsPDF('landscape');
+doc.setFontSize(14); doc.text("Daftar Purchase Order Arzhop", 14, 15);
+doc.setFontSize(10); doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
 
-doc.setFontSize(14);
-doc.text("Daftar Purchase Order Arzhop", 14, 15);
-doc.setFontSize(10);
-doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
-
-const tableColumn = ["Nama", "Supplier", "Orderan", "Estimasi", "Hrg Jual", "Hrg Pusat", "Disc", "DP", "Bayar", "Sisa", "Laba"];
-const tableRows = [];
-
-poData.forEach(po => {
-const sisa = (po.harga - po.disc) - po.dp - po.bayar;
-const poDataRow = [
-po.nama,
-po.supplier,
-po.orderan,
-formatDate(po.estimasi),
-formatRupiah(po.harga),
-formatRupiah(po.hargaPusat || 0),
-formatRupiah(po.disc),
-formatRupiah(po.dp),
-formatRupiah(po.bayar || 0),
-formatRupiah(sisa),
-formatRupiah(po.laba || 0)
-];
-tableRows.push(poDataRow);
+const tableRows = poData.map(po => {
+return [po.nama, po.supplier, po.orderan, formatDate(po.estimasi), formatRupiah(po.harga), formatRupiah(po.hargaPusat||0), formatRupiah(po.disc), formatRupiah(po.dp), formatRupiah(po.bayar||0), formatRupiah((po.harga-po.disc)-po.dp-po.bayar), formatRupiah(po.laba||0)];
 });
 
 doc.autoTable({
-head: [tableColumn],
-body: tableRows,
-startY: 28,
-theme: 'grid',
-styles: {
-fontSize: 7,
-cellPadding: 3,
-lineWidth: 0.2,
-lineColor: [0, 0, 0],
-textColor: [20, 20, 20]
-},
-headStyles: {
-fillColor: [37, 99, 235],
-textColor: [255, 255, 255],
-lineWidth: 0.2,
-lineColor: [0, 0, 0]
-},
-columnStyles: {
-4: { halign: 'right' },
-5: { halign: 'right' },
-6: { halign: 'right' },
-7: { halign: 'right' },
-8: { halign: 'right' },
-9: { halign: 'right' },
-10: { halign: 'right' }
-}
+head: [["Nama", "Supplier", "Orderan", "Estimasi", "Hrg Jual", "Hrg Pusat", "Disc", "DP", "Bayar", "Sisa", "Laba"]],
+body: tableRows, startY: 28, theme: 'grid',
+styles: { fontSize: 7, cellPadding: 3, lineWidth: 0.2, lineColor: [0,0,0], textColor: [20,20,20] },
+headStyles: { fillColor: [37,99,235], textColor: [255,255,255], lineWidth: 0.2, lineColor: [0,0,0] },
+columnStyles: { 4:{halign:'right'}, 5:{halign:'right'}, 6:{halign:'right'}, 7:{halign:'right'}, 8:{halign:'right'}, 9:{halign:'right'}, 10:{halign:'right'} }
 });
-
 doc.save(`Arzhop_PO_${new Date().toISOString().split('T')[0]}.pdf`);
-showToast("Berhasil mendownload PDF!");
+showToast("Mendownload PDF...");
 };
 
-// Save to LocalStorage
 const saveData = () => {
 localStorage.setItem('poData', JSON.stringify(poData));
 };
 
-// Reset Form
 const resetForm = () => {
 document.getElementById('poForm').reset();
 document.getElementById('editId').value = '';
@@ -688,7 +645,7 @@ document.getElementById('laba').value = '';
 document.getElementById('btnSubmitText').innerText = 'Simpan PO';
 };
 
-// Initial Render
+// Initialize
 renderTable();
 
 </script>
