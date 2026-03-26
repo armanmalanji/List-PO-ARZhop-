@@ -190,8 +190,8 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreData(event)">
 <input type="file" id="importExcelFile" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)">
 
-<button onclick="backupData()" class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors border border-blue-200" title="Simpan Cadangan Data (.json)">
-<i data-lucide="download-cloud" class="w-4 h-4"></i> Backup
+<button onclick="backupData()" class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors border border-blue-200" title="Bagikan / Simpan Cadangan Data">
+<i data-lucide="share-2" class="w-4 h-4"></i> Backup
 </button>
 <button onclick="document.getElementById('restoreFile').click()" class="flex items-center gap-1.5 px-3 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-semibold transition-colors border border-purple-200" title="Pulihkan Data dari JSON">
 <i data-lucide="upload-cloud" class="w-4 h-4"></i> Restore
@@ -516,17 +516,46 @@ po.orderan.toLowerCase().includes(keyword)
 renderTable(filteredData);
 });
 
-// Backup to JSON
-const backupData = () => {
+// ==========================================
+// FITUR BARU: BACKUP VIA SHARE NATIVE API
+// ==========================================
+const backupData = async () => {
 if (poData.length === 0) return showToast("Tidak ada data untuk dibackup!");
-const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(poData));
+
+const jsonData = JSON.stringify(poData);
+const fileName = `Backup_Arzhop_PO_${new Date().toISOString().split('T')[0]}.json`;
+
+// Cek apakah browser mendukung fitur Web Share API dengan File
+if (navigator.canShare) {
+try {
+const file = new File([jsonData], fileName, { type: "application/json" });
+
+if (navigator.canShare({ files: [file] })) {
+await navigator.share({
+files: [file],
+title: 'Backup PO Arzhop',
+text: 'Berikut adalah file cadangan (backup) data PO Arzhop.'
+});
+showToast("Menu bagikan berhasil dibuka!");
+return; // Keluar dari fungsi jika berhasil membagikan
+}
+} catch (error) {
+console.log('User membatalkan share atau terjadi error:', error);
+// Jika batal, tidak usah lanjut ke download otomatis.
+return;
+}
+}
+
+// FALLBACK: Jika tidak mendukung fitur Share (Misal di PC/Browser lama)
+// Lakukan cara lama yaitu download otomatis
+const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonData);
 const downloadAnchorNode = document.createElement('a');
 downloadAnchorNode.setAttribute("href", dataStr);
-downloadAnchorNode.setAttribute("download", `Backup_Arzhop_PO_${new Date().toISOString().split('T')[0]}.json`);
+downloadAnchorNode.setAttribute("download", fileName);
 document.body.appendChild(downloadAnchorNode);
 downloadAnchorNode.click();
 downloadAnchorNode.remove();
-showToast("File backup diunduh!");
+showToast("File backup otomatis diunduh!");
 };
 
 // Restore from JSON
@@ -553,9 +582,7 @@ reader.readAsText(file);
 event.target.value = '';
 };
 
-// ==========================================
-// FITUR BARU: IMPORT EXCEL (.XLSX / .CSV)
-// ==========================================
+// Import Excel (.XLSX / .CSV)
 const importExcel = (event) => {
 const file = event.target.files[0];
 if (!file) return;
@@ -573,9 +600,7 @@ if(excelData.length === 0) {
 return alert("File Excel kosong!");
 }
 
-// Mapping Kolom Excel ke Format Aplikasi
 const importedPOs = excelData.map((row, index) => {
-// Mengakali format tanggal dari Excel agar bisa masuk ke input type="date"
 let estimasiDate = "";
 if (row["Estimasi Ready"]) {
 try {
@@ -583,7 +608,7 @@ const d = new Date(row["Estimasi Ready"]);
 if (!isNaN(d.getTime())) {
 estimasiDate = d.toISOString().split('T')[0];
 } else {
-estimasiDate = row["Estimasi Ready"]; // Biarkan teks jika gagal parse
+estimasiDate = row["Estimasi Ready"];
 }
 } catch(err) {
 estimasiDate = row["Estimasi Ready"];
@@ -605,7 +630,6 @@ estimasi: estimasiDate
 };
 });
 
-// Gabungkan data lama dengan data hasil import dari Excel
 poData = [...poData, ...importedPOs];
 saveData();
 renderTable();
@@ -616,7 +640,7 @@ alert("Gagal membaca file Excel. Pastikan file tersebut adalah hasil Export dari
 }
 };
 reader.readAsArrayBuffer(file);
-event.target.value = ''; // Reset input agar bisa dipakai lagi
+event.target.value = '';
 };
 
 // Exit App
