@@ -49,6 +49,11 @@ primary: {
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* Animasi untuk Akordion Grup */
+.group-content { transition: max-height 0.3s ease-out, opacity 0.3s ease-out; max-height: 0; opacity: 0; overflow: hidden; }
+.group-content.open { max-height: 2000px; opacity: 1; }
+.chevron { transition: transform 0.3s ease; }
+.chevron.open { transform: rotate(180deg); }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
@@ -194,7 +199,15 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <div class="lg:col-span-2">
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
 <div class="px-6 py-5 border-b border-slate-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-50/50">
+<div class="flex items-center gap-4">
 <h2 class="text-lg font-bold text-slate-900">Daftar List PO</h2>
+
+<!-- Toggle Mode Tampilan -->
+<div class="flex items-center bg-slate-200 p-1 rounded-lg">
+<button id="btnModeUmum" onclick="switchMode('umum')" class="px-3 py-1 text-xs font-medium rounded-md bg-white text-slate-800 shadow-sm transition-all">Umum</button>
+<button id="btnModeGrup" onclick="switchMode('grup')" class="px-3 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-800 transition-all">Grup by Nama</button>
+</div>
+</div>
 
 <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
 <!-- Hidden inputs for data import/restore -->
@@ -234,7 +247,8 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </div>
 </div>
 
-<div class="overflow-x-auto">
+<!-- Container untuk Tabel Mode Umum -->
+<div id="viewUmum" class="overflow-x-auto">
 <table class="w-full text-left border-collapse">
 <thead>
 <tr class="bg-white border-b border-slate-100 text-slate-500 text-sm">
@@ -245,9 +259,14 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </tr>
 </thead>
 <tbody id="poTableBody" class="text-sm divide-y divide-slate-100">
-<!-- Data will be injected here -->
+<!-- Data Umum -->
 </tbody>
 </table>
+</div>
+
+<!-- Container untuk Tabel Mode Grup -->
+<div id="viewGrup" class="hidden flex-col divide-y divide-slate-100">
+<!-- Data Grup di-inject ke sini -->
 </div>
 
 <!-- Empty State -->
@@ -282,32 +301,29 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
-// Registrasi Service Worker untuk PWA
 if ('serviceWorker' in navigator) {
 window.addEventListener('load', () => {
 navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
 });
 }
-
-// Initialize Icons
 lucide.createIcons();
 
-// Pengamanan Kunci Penyimpanan Arzhop PO
+// Security Wrapper for LocalStorage
 let poData = [];
 const getStorageData = () => {
 try {
 const stored = window.localStorage.getItem('poData');
 return stored ? JSON.parse(stored) : [];
 } catch (error) {
-console.warn("Akses localStorage diblokir. Aplikasi menggunakan memori sementara.");
+console.warn("Akses localStorage diblokir.");
 return [];
 }
 };
 
 poData = getStorageData();
 let currentLunasId = null;
+let currentMode = 'umum'; // State mode tabel (umum / grup)
 
-// Custom Toast Message
 const showToast = (message) => {
 const container = document.getElementById('toastContainer');
 const toast = document.createElement('div');
@@ -315,14 +331,12 @@ toast.className = 'bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg text-s
 toast.innerHTML = `<i data-lucide="info" class="w-4 h-4"></i> ${message}`;
 container.appendChild(toast);
 lucide.createIcons();
-
 setTimeout(() => {
 toast.classList.add('opacity-0');
 setTimeout(() => toast.remove(), 300);
 }, 3000);
 };
 
-// Utility Formatter
 const formatRupiahShort = (number) => {
 if (number >= 1000000000) return 'Rp ' + (number / 1000000000).toFixed(1).replace(/\.0$/, '') + ' M';
 if (number >= 1000000) return 'Rp ' + (number / 1000000).toFixed(1).replace(/\.0$/, '') + ' Jt';
@@ -337,25 +351,79 @@ const formatDate = (dateString) => {
 return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-// Header Date
-const setHeaderDate = () => {
+setHeaderDate = () => {
 document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 };
 setHeaderDate();
 
-// Main Render
+// Switch Mode Logic (Umum vs Grup)
+const switchMode = (mode) => {
+currentMode = mode;
+const btnUmum = document.getElementById('btnModeUmum');
+const btnGrup = document.getElementById('btnModeGrup');
+const viewUmum = document.getElementById('viewUmum');
+const viewGrup = document.getElementById('viewGrup');
+
+if (mode === 'umum') {
+btnUmum.className = "px-3 py-1 text-xs font-medium rounded-md bg-white text-slate-800 shadow-sm transition-all";
+btnGrup.className = "px-3 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-800 transition-all";
+viewUmum.classList.remove('hidden');
+viewGrup.classList.add('hidden');
+viewGrup.classList.remove('flex');
+} else {
+btnGrup.className = "px-3 py-1 text-xs font-medium rounded-md bg-white text-slate-800 shadow-sm transition-all";
+btnUmum.className = "px-3 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-800 transition-all";
+viewUmum.classList.add('hidden');
+viewGrup.classList.remove('hidden');
+viewGrup.classList.add('flex');
+}
+
+// Re-render berdasarkan keyword pencarian terakhir (jika ada)
+const keyword = document.getElementById('searchInput').value.toLowerCase();
+const filteredData = poData.filter(po =>
+po.nama.toLowerCase().includes(keyword) ||
+po.supplier.toLowerCase().includes(keyword) ||
+po.orderan.toLowerCase().includes(keyword)
+);
+renderTable(filteredData);
+};
+
+// Fungsi toggle akordion grup
+const toggleGroup = (namaId) => {
+const content = document.getElementById(`content-${namaId}`);
+const chevron = document.getElementById(`chevron-${namaId}`);
+
+if (content.classList.contains('open')) {
+content.classList.remove('open');
+chevron.classList.remove('open');
+} else {
+content.classList.add('open');
+chevron.classList.add('open');
+}
+};
+
+// Main Render (Menangani dua mode sekaligus)
 const renderTable = (dataToRender = poData) => {
-const tbody = document.getElementById('poTableBody');
+const tbodyUmum = document.getElementById('poTableBody');
+const viewGrup = document.getElementById('viewGrup');
 const emptyState = document.getElementById('emptyState');
-tbody.innerHTML = '';
+
+tbodyUmum.innerHTML = '';
+viewGrup.innerHTML = '';
 
 if (dataToRender.length === 0) {
 emptyState.classList.remove('hidden');
 emptyState.classList.add('flex');
-} else {
+document.getElementById('viewUmum').classList.add('hidden');
+viewGrup.classList.add('hidden');
+return;
+}
+
 emptyState.classList.add('hidden');
 emptyState.classList.remove('flex');
+if (currentMode === 'umum') document.getElementById('viewUmum').classList.remove('hidden');
 
+// --- RENDER MODE UMUM ---
 dataToRender.forEach((po) => {
 const totalOrder = po.harga - po.disc;
 const totalDibayar = po.dp + po.bayar;
@@ -366,22 +434,21 @@ const statusBadge = isLunas
 ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700"><i data-lucide="check" class="w-3 h-3"></i> Lunas</span>`
 : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700"><i data-lucide="clock" class="w-3 h-3"></i> Sisa: ${formatRupiah(sisa)}</span>`;
 
-const row = document.createElement('tr');
-row.className = 'hover:bg-slate-50 transition-colors group border-b border-slate-50';
-row.innerHTML = `
-<td class="py-4 px-6 align-top">
+// Pembuatan baris HTML (dijadikan fungsi agar bisa dipakai ulang)
+const createRowHTML = (po, isGroup = false) => `
+<td class="py-4 px-6 align-top ${isGroup ? 'pl-8 bg-slate-50/30' : ''}">
 <div class="font-medium text-slate-900">${po.nama}</div>
 <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
 <i data-lucide="building-2" class="w-3 h-3"></i> ${po.supplier}
 </div>
 </td>
-<td class="py-4 px-6 max-w-[200px] align-top">
+<td class="py-4 px-6 max-w-[200px] align-top ${isGroup ? 'bg-slate-50/30' : ''}">
 <div class="truncate font-medium text-slate-700 whitespace-normal text-xs" title="${po.orderan}">${po.orderan}</div>
 <div class="text-xs text-blue-600 mt-2 font-medium flex items-center gap-1 bg-blue-50 w-max px-2 py-0.5 rounded">
 <i data-lucide="calendar" class="w-3 h-3"></i> Ready: ${formatDate(po.estimasi)}
 </div>
 </td>
-<td class="py-4 px-6 align-top">
+<td class="py-4 px-6 align-top ${isGroup ? 'bg-slate-50/30' : ''}">
 <div class="text-sm font-semibold text-slate-900 mb-1 border-b border-slate-100 pb-1">Jual: ${formatRupiah(po.harga)}</div>
 <div class="text-xs text-slate-600 mb-1">Pusat: ${formatRupiah(po.hargaPusat)}</div>
 <div class="text-xs text-slate-600 mb-1">Bayar: ${formatRupiah(po.bayar)}</div>
@@ -389,7 +456,7 @@ row.innerHTML = `
 ${po.disc > 0 ? `<div class="text-xs font-medium text-red-500 mt-1">Disc: -${formatRupiah(po.disc)}</div>` : ''}
 ${po.laba ? `<div class="text-xs font-semibold text-emerald-600 mt-1 pt-1 border-t border-slate-100">Laba: ${formatRupiah(po.laba)}</div>` : ''}
 </td>
-<td class="py-4 px-6 text-center align-top">
+<td class="py-4 px-6 text-center align-top ${isGroup ? 'bg-slate-50/30' : ''}">
 <div class="flex flex-col items-center gap-3">
 ${statusBadge}
 <div class="flex items-center justify-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
@@ -408,9 +475,131 @@ ${!isLunas ? `
 </div>
 </td>
 `;
-tbody.appendChild(row);
+
+// Render ke Tabel Umum
+const trUmum = document.createElement('tr');
+trUmum.className = 'hover:bg-slate-50 transition-colors group border-b border-slate-50';
+trUmum.innerHTML = createRowHTML(po, false);
+tbodyUmum.appendChild(trUmum);
 });
+
+// --- RENDER MODE GRUP BY NAMA ---
+// 1. Kelompokkan data berdasarkan nama
+const groupedData = dataToRender.reduce((groups, item) => {
+const namaKey = item.nama.trim().toUpperCase();
+if (!groups[namaKey]) {
+groups[namaKey] = {
+namaAsli: item.nama,
+items: [],
+totalTagihan: 0,
+totalDibayar: 0,
+sisaTagihan: 0
+};
 }
+
+groups[namaKey].items.push(item);
+
+const hargaBersih = item.harga - item.disc;
+const uangMasuk = item.dp + item.bayar;
+groups[namaKey].totalTagihan += hargaBersih;
+groups[namaKey].totalDibayar += uangMasuk;
+groups[namaKey].sisaTagihan += (hargaBersih - uangMasuk);
+
+return groups;
+}, {});
+
+// 2. Buat HTML untuk setiap Grup
+Object.values(groupedData).forEach((group, index) => {
+const safeId = `group-${index}`;
+const isLunasAll = group.sisaTagihan <= 0;
+
+const groupDiv = document.createElement('div');
+groupDiv.className = 'flex flex-col bg-white';
+
+// Header Grup (Bisa diklik)
+groupDiv.innerHTML = `
+<div class="px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 transition-colors" onclick="toggleGroup('${safeId}')">
+<div class="flex items-center gap-3">
+<i data-lucide="chevron-down" id="chevron-${safeId}" class="w-5 h-5 text-slate-400 chevron"></i>
+<div class="flex items-center gap-2">
+<h3 class="font-bold text-slate-900 text-base">${group.namaAsli}</h3>
+<span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">${group.items.length} Order</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-sm">
+<div class="hidden sm:block text-slate-500">
+Total: <span class="font-semibold text-slate-700">${formatRupiah(group.totalTagihan)}</span>
+</div>
+<div class="${isLunasAll ? 'text-green-600 bg-green-50' : 'text-orange-600 bg-orange-50'} px-3 py-1 rounded-lg font-semibold">
+${isLunasAll ? 'LUNAS' : `Sisa: ${formatRupiah(group.sisaTagihan)}`}
+</div>
+</div>
+</div>
+
+<!-- Isi Tabel (Disembunyikan secara default) -->
+<div id="content-${safeId}" class="group-content bg-slate-50/30 border-t border-slate-100">
+<div class="overflow-x-auto p-4 pt-0">
+<table class="w-full text-left border-collapse bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 mt-3">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wider">
+<th class="py-3 px-5 font-semibold">Customer & Supplier</th>
+<th class="py-3 px-5 font-semibold">Orderan</th>
+<th class="py-3 px-5 font-semibold">Keuangan</th>
+<th class="py-3 px-5 font-semibold text-center">Status</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-slate-100" id="tbody-${safeId}">
+<!-- Baris item akan dimasukkan ke sini via JS -->
+</tbody>
+</table>
+</div>
+</div>
+`;
+
+viewGrup.appendChild(groupDiv);
+
+// Masukkan isi baris ke dalam tabel grup ini
+const tbodyGrup = groupDiv.querySelector(`#tbody-${safeId}`);
+group.items.forEach(po => {
+// Logic lunas/badge dicopy ulang untuk digunakan di fungsi createRowHTML
+const totalOrder = po.harga - po.disc;
+const totalDibayar = po.dp + po.bayar;
+const sisa = totalOrder - totalDibayar;
+const isLunas = sisa <= 0;
+
+const statusBadge = isLunas
+? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700"><i data-lucide="check" class="w-3 h-3"></i> Lunas</span>`
+: `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-100 text-orange-700"><i data-lucide="clock" class="w-3 h-3"></i> ${formatRupiahShort(sisa)}</span>`;
+
+const trItem = document.createElement('tr');
+trItem.className = 'hover:bg-slate-50/80 transition-colors group';
+
+// Bentuk baris sedikit disederhanakan karena sudah ada di dalam grup
+trItem.innerHTML = `
+<td class="py-3 px-5 align-top">
+<div class="text-xs font-medium text-slate-500 flex items-center gap-1"><i data-lucide="building-2" class="w-3 h-3"></i> ${po.supplier}</div>
+</td>
+<td class="py-3 px-5 max-w-[200px] align-top">
+<div class="truncate font-medium text-slate-700 whitespace-normal text-xs" title="${po.orderan}">${po.orderan}</div>
+<div class="text-[10px] text-blue-600 mt-1">Ready: ${formatDate(po.estimasi)}</div>
+</td>
+<td class="py-3 px-5 align-top text-xs">
+<div>Jual: ${formatRupiah(po.harga)}</div>
+<div class="text-slate-500">Bayar+DP: ${formatRupiah(po.bayar + po.dp)}</div>
+</td>
+<td class="py-3 px-5 text-center align-top">
+<div class="flex flex-col items-center gap-2">
+${statusBadge}
+<div class="flex items-center justify-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+<button onclick="editPO('${po.id}')" class="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+</div>
+</div>
+</td>
+`;
+tbodyGrup.appendChild(trItem);
+});
+});
+
 lucide.createIcons();
 updateSummary();
 };
@@ -543,7 +732,7 @@ po.nama.toLowerCase().includes(keyword) ||
 po.supplier.toLowerCase().includes(keyword) ||
 po.orderan.toLowerCase().includes(keyword)
 );
-renderTable(filteredData);
+renderTable(filteredData); // Otomatis me-render sesuai currentMode
 });
 
 // ==========================================
@@ -574,7 +763,6 @@ console.log('Share dibatalkan atau gagal:', error);
 }
 }
 
-// Fallback download otomatis jika Share dibatalkan atau tidak didukung laptop/preview
 if (!shareSuccess) {
 try {
 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonData);
@@ -591,7 +779,6 @@ showToast("Gagal memproses file backup.");
 }
 };
 
-// Restore from JSON
 const restoreData = (event) => {
 const file = event.target.files[0];
 if (!file) return;
@@ -615,17 +802,12 @@ reader.readAsText(file);
 event.target.value = '';
 };
 
-// Helper: Pembersih format uang (Misal "Rp 117.000" jadi 117000)
 const parseCurrency = (val) => {
 if (val === undefined || val === null || val === "") return 0;
 if (typeof val === 'number') return val;
-// Hapus semua karakter yang bukan angka (seperti 'Rp', spasi, titik)
 return parseFloat(val.toString().replace(/[^0-9]/g, "")) || 0;
 };
 
-// ==========================================
-// FITUR PINTAR: IMPORT EXCEL (.XLSX / .CSV)
-// ==========================================
 const importExcel = (event) => {
 const file = event.target.files[0];
 if (!file) return;
@@ -644,7 +826,6 @@ return alert("File Excel kosong!");
 }
 
 const importedPOs = excelData.map((row, index) => {
-// Bersihkan tanggal
 let estimasiDate = "";
 if (row["Estimasi Ready"] || row["Estimasi"]) {
 const rawDate = row["Estimasi Ready"] || row["Estimasi"];
@@ -660,7 +841,6 @@ estimasiDate = rawDate;
 }
 }
 
-// Bersihkan teks uang dari "Rp" atau titik menggunakan parseCurrency
 return {
 id: Date.now().toString() + index + Math.random().toString(36).substr(2, 5),
 nama: row["Nama Customer"] || row["Nama"] || "",
@@ -689,7 +869,6 @@ reader.readAsArrayBuffer(file);
 event.target.value = '';
 };
 
-// Exit App
 const keluarApp = () => {
 saveData();
 showToast("Menyimpan data...");
@@ -702,7 +881,6 @@ window.location.href = "about:blank";
 }, 800);
 };
 
-// Export XLS (Excel)
 const exportXLS = () => {
 if(poData.length === 0) return showToast("Belum ada data untuk di-export.");
 const worksheetData = poData.map(po => {
@@ -737,7 +915,6 @@ XLSX.writeFile(workbook, `Arzhop_PO_${new Date().toISOString().split('T')[0]}.xl
 showToast("Mendownload Excel...");
 };
 
-// Export PDF
 const exportPDF = () => {
 if(poData.length === 0) return showToast("Belum ada data untuk di-export.");
 const { jsPDF } = window.jspdf;
@@ -764,7 +941,7 @@ const saveData = () => {
 try {
 window.localStorage.setItem('poData', JSON.stringify(poData));
 } catch (e) {
-console.warn("Gagal menyimpan ke localStorage. Ini normal jika dibuka pada mode keamanan tinggi.");
+console.warn("Gagal menyimpan ke localStorage.");
 }
 };
 
@@ -776,7 +953,6 @@ document.getElementById('laba').value = '';
 document.getElementById('btnSubmitText').innerText = 'Simpan PO';
 };
 
-// Initialize
 renderTable();
 
 </script>
