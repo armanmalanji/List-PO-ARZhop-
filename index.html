@@ -5,14 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arzhop PO Manager</title>
 
+<!-- PWA Meta Tags -->
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#ffffff">
 <link rel="apple-touch-icon" href="./Arzhop new.png">
 
+<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
+<!-- SheetJS Style (Excel Export & Import) -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<!-- jsPDF & AutoTable (PDF Export) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -47,6 +53,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
+<!-- Navbar -->
 <nav class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex justify-between h-16 items-center">
@@ -66,6 +73,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
+<!-- Summary Cards -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
 <div class="p-3 bg-blue-50 rounded-xl text-blue-600 shrink-0">
@@ -106,6 +114,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Form Section -->
 <div class="lg:col-span-1">
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-24">
 <div class="mb-6 flex items-center justify-between">
@@ -181,16 +190,19 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </div>
 </div>
 
+<!-- Table Section -->
 <div class="lg:col-span-2">
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
 <div class="px-6 py-5 border-b border-slate-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-50/50">
 <h2 class="text-lg font-bold text-slate-900">Daftar List PO</h2>
 
 <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+<!-- Hidden inputs for data import/restore -->
 <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreData(event)">
 <input type="file" id="importExcelFile" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)">
 
-<button onclick="backupData()" class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors border border-blue-200" title="Bagikan / Simpan Cadangan Data">
+<!-- Tombol Backup & Restore .JSON -->
+<button onclick="backupData()" class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors border border-blue-200" title="Bagikan / Simpan Cadangan Data (.json)">
 <i data-lucide="share-2" class="w-4 h-4"></i> Backup
 </button>
 <button onclick="document.getElementById('restoreFile').click()" class="flex items-center gap-1.5 px-3 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg text-xs font-semibold transition-colors border border-purple-200" title="Pulihkan Data dari JSON">
@@ -199,12 +211,14 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 
 <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
+<!-- Tombol Import Excel Baru -->
 <button onclick="document.getElementById('importExcelFile').click()" class="flex items-center gap-1.5 px-3 py-2 bg-teal-50 text-teal-700 hover:bg-teal-100 rounded-lg text-xs font-semibold transition-colors border border-teal-200" title="Pulihkan Data dari Excel (XLS/CSV)">
 <i data-lucide="file-up" class="w-4 h-4"></i> Import XLS
 </button>
 
 <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
+<!-- Tombol Export -->
 <button onclick="exportXLS()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-semibold transition-colors border border-emerald-200" title="Export to Excel">
 <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> XLS
 </button>
@@ -212,6 +226,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 <i data-lucide="file-text" class="w-4 h-4"></i> PDF
 </button>
 
+<!-- Search -->
 <div class="relative flex-grow xl:flex-grow-0 mt-2 xl:mt-0 w-full xl:w-auto">
 <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
 <input type="text" id="searchInput" placeholder="Cari nama/supplier..." class="pl-9 pr-4 py-2 w-full text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-primary-500 outline-none xl:w-48">
@@ -230,10 +245,12 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </tr>
 </thead>
 <tbody id="poTableBody" class="text-sm divide-y divide-slate-100">
+<!-- Data will be injected here -->
 </tbody>
 </table>
 </div>
 
+<!-- Empty State -->
 <div id="emptyState" class="hidden flex-col items-center justify-center py-16 px-4 text-center">
 <div class="bg-slate-50 p-6 rounded-full mb-4">
 <i data-lucide="inbox" class="w-12 h-12 text-slate-300"></i>
@@ -246,6 +263,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </div>
 </main>
 
+<!-- Modal Konfirmasi Lunas -->
 <div id="lunasModal" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center opacity-0 transition-opacity">
 <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 transform scale-95 transition-transform">
 <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
@@ -260,6 +278,7 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin
 </div>
 </div>
 
+<!-- Container Toast Message -->
 <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
@@ -273,8 +292,19 @@ navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:'
 // Initialize Icons
 lucide.createIcons();
 
-// State Management
-let poData = JSON.parse(localStorage.getItem('poData')) || [];
+// Pengamanan Kunci Penyimpanan Arzhop PO
+let poData = [];
+const getStorageData = () => {
+try {
+const stored = window.localStorage.getItem('poData');
+return stored ? JSON.parse(stored) : [];
+} catch (error) {
+console.warn("Akses localStorage diblokir. Aplikasi menggunakan memori sementara.");
+return [];
+}
+};
+
+poData = getStorageData();
 let currentLunasId = null;
 
 // Custom Toast Message
@@ -517,16 +547,16 @@ renderTable(filteredData);
 });
 
 // ==========================================
-// FITUR BARU: BACKUP VIA SHARE NATIVE API
+// FITUR BACKUP DENGAN SHARE API & FALLBACK
 // ==========================================
 const backupData = async () => {
 if (poData.length === 0) return showToast("Tidak ada data untuk dibackup!");
 
 const jsonData = JSON.stringify(poData);
 const fileName = `Backup_Arzhop_PO_${new Date().toISOString().split('T')[0]}.json`;
+let shareSuccess = false;
 
-// Cek apakah browser mendukung fitur Web Share API dengan File
-if (navigator.canShare) {
+if (navigator.canShare && navigator.share) {
 try {
 const file = new File([jsonData], fileName, { type: "application/json" });
 
@@ -537,17 +567,16 @@ title: 'Backup PO Arzhop',
 text: 'Berikut adalah file cadangan (backup) data PO Arzhop.'
 });
 showToast("Menu bagikan berhasil dibuka!");
-return; // Keluar dari fungsi jika berhasil membagikan
+shareSuccess = true;
 }
 } catch (error) {
-console.log('User membatalkan share atau terjadi error:', error);
-// Jika batal, tidak usah lanjut ke download otomatis.
-return;
+console.log('Share dibatalkan atau gagal:', error);
 }
 }
 
-// FALLBACK: Jika tidak mendukung fitur Share (Misal di PC/Browser lama)
-// Lakukan cara lama yaitu download otomatis
+// Fallback download otomatis jika Share dibatalkan atau tidak didukung laptop/preview
+if (!shareSuccess) {
+try {
 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonData);
 const downloadAnchorNode = document.createElement('a');
 downloadAnchorNode.setAttribute("href", dataStr);
@@ -556,6 +585,10 @@ document.body.appendChild(downloadAnchorNode);
 downloadAnchorNode.click();
 downloadAnchorNode.remove();
 showToast("File backup otomatis diunduh!");
+} catch (err) {
+showToast("Gagal memproses file backup.");
+}
+}
 };
 
 // Restore from JSON
@@ -582,7 +615,17 @@ reader.readAsText(file);
 event.target.value = '';
 };
 
-// Import Excel (.XLSX / .CSV)
+// Helper: Pembersih format uang (Misal "Rp 117.000" jadi 117000)
+const parseCurrency = (val) => {
+if (val === undefined || val === null || val === "") return 0;
+if (typeof val === 'number') return val;
+// Hapus semua karakter yang bukan angka (seperti 'Rp', spasi, titik)
+return parseFloat(val.toString().replace(/[^0-9]/g, "")) || 0;
+};
+
+// ==========================================
+// FITUR PINTAR: IMPORT EXCEL (.XLSX / .CSV)
+// ==========================================
 const importExcel = (event) => {
 const file = event.target.files[0];
 if (!file) return;
@@ -601,31 +644,34 @@ return alert("File Excel kosong!");
 }
 
 const importedPOs = excelData.map((row, index) => {
+// Bersihkan tanggal
 let estimasiDate = "";
-if (row["Estimasi Ready"]) {
+if (row["Estimasi Ready"] || row["Estimasi"]) {
+const rawDate = row["Estimasi Ready"] || row["Estimasi"];
 try {
-const d = new Date(row["Estimasi Ready"]);
+const d = new Date(rawDate);
 if (!isNaN(d.getTime())) {
 estimasiDate = d.toISOString().split('T')[0];
 } else {
-estimasiDate = row["Estimasi Ready"];
+estimasiDate = rawDate;
 }
 } catch(err) {
-estimasiDate = row["Estimasi Ready"];
+estimasiDate = rawDate;
 }
 }
 
+// Bersihkan teks uang dari "Rp" atau titik menggunakan parseCurrency
 return {
 id: Date.now().toString() + index + Math.random().toString(36).substr(2, 5),
-nama: row["Nama Customer"] || "",
+nama: row["Nama Customer"] || row["Nama"] || "",
 supplier: row["Supplier"] || "",
 orderan: row["Orderan"] || "",
-harga: parseFloat(row["Harga Jual"]) || 0,
-hargaPusat: parseFloat(row["Harga Pusat"]) || 0,
-bayar: parseFloat(row["Bayar"]) || 0,
-disc: parseFloat(row["Discount"]) || 0,
-dp: parseFloat(row["DP"]) || 0,
-laba: parseFloat(row["Laba"]) || 0,
+harga: parseCurrency(row["Harga Jual"] || row["Hrg Jual"]),
+hargaPusat: parseCurrency(row["Harga Pusat"] || row["Hrg Pusat"]),
+bayar: parseCurrency(row["Bayar"]),
+disc: parseCurrency(row["Discount"] || row["Disc"]),
+dp: parseCurrency(row["DP"]),
+laba: parseCurrency(row["Laba"]),
 estimasi: estimasiDate
 };
 });
@@ -715,7 +761,11 @@ showToast("Mendownload PDF...");
 };
 
 const saveData = () => {
-localStorage.setItem('poData', JSON.stringify(poData));
+try {
+window.localStorage.setItem('poData', JSON.stringify(poData));
+} catch (e) {
+console.warn("Gagal menyimpan ke localStorage. Ini normal jika dibuka pada mode keamanan tinggi.");
+}
 };
 
 const resetForm = () => {
